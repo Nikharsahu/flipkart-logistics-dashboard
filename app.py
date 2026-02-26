@@ -35,6 +35,7 @@ menu = st.sidebar.selectbox(
 # ---------------- ORDERS ----------------
 if menu == "Orders":
     df = pd.read_csv("Flipkart_Orders - Sheet1.csv")
+    df.columns = df.columns.str.strip().str.replace(" ", "_").str.replace("%","").str.replace("(","").str.replace(")","")
 
     st.subheader("📦 Orders Overview")
 
@@ -49,6 +50,7 @@ if menu == "Orders":
 # ---------------- ROUTES ----------------
 elif menu == "Routes":
     df = pd.read_csv("Flipkart_Routes - Sheet1.csv")
+    df.columns = df.columns.str.strip().str.replace(" ", "_").str.replace("%","").str.replace("(","").str.replace(")","")
 
     st.subheader("🛣 Route Performance")
 
@@ -62,6 +64,7 @@ elif menu == "Routes":
 # ---------------- WAREHOUSES ----------------
 elif menu == "Warehouses":
     df = pd.read_csv("Flipkart_Warehouses - Sheet1.csv")
+    df.columns = df.columns.str.strip().str.replace(" ", "_").str.replace("%","").str.replace("(","").str.replace(")","")
 
     st.subheader("🏭 Warehouse Performance")
 
@@ -75,6 +78,7 @@ elif menu == "Warehouses":
 # ---------------- DELIVERY AGENTS ----------------
 elif menu == "Delivery Agents":
     df = pd.read_csv("Flipkart_DeliveryAgents - Sheet1.csv")
+    df.columns = df.columns.str.strip().str.replace(" ", "_").str.replace("%","").str.replace("(","").str.replace(")","")
 
     st.subheader("🚴 Delivery Agent Performance")
 
@@ -88,6 +92,7 @@ elif menu == "Delivery Agents":
 # ---------------- SHIPMENT TRACKING ----------------
 elif menu == "Shipment Tracking":
     df = pd.read_csv("Flipkart_ShipmentTracking - Sheet1.csv")
+    df.columns = df.columns.str.strip().str.replace(" ", "_").str.replace("%","").str.replace("(","").str.replace(")","")
 
     st.subheader("📍 Shipment Tracking")
 
@@ -96,4 +101,5 @@ elif menu == "Shipment Tracking":
 st.sidebar.markdown("---")
 
 st.sidebar.success("Admin Panel - Logistics Analytics")
+
 
