@@ -55,20 +55,73 @@ def load_data(file):
 
 # ================= EXECUTIVE SUMMARY =================
 if menu == "Executive Summary":
-    st.title("📈 Executive Overview")
+
+    st.title("📈 Executive Overview Dashboard")
 
     orders = load_data("Flipkart_Orders - Sheet1.csv")
     routes = load_data("Flipkart_Routes - Sheet1.csv")
     warehouses = load_data("Flipkart_Warehouses - Sheet1.csv")
 
-    col1, col2, col3 = st.columns(3)
+    # ---------------- KPI ROW ----------------
+    col1, col2, col3, col4 = st.columns(4)
 
     col1.metric("Total Orders", len(orders))
     col2.metric("Total Routes", len(routes))
     col3.metric("Total Warehouses", len(warehouses))
 
-    st.info("💡 This executive dashboard provides real-time monitoring of logistics operations across the enterprise.")
+    if "Order_Value" in orders.columns:
+        col4.metric("Total Revenue", int(orders["Order_Value"].sum()))
 
+    st.markdown("---")
+
+    # ---------------- ORDER STATUS ----------------
+    if "Delivery_Status" in orders.columns:
+
+        status_counts = orders["Delivery_Status"].value_counts().reset_index()
+        status_counts.columns = ["Delivery_Status", "Count"]
+
+        fig_status = px.pie(
+            status_counts,
+            names="Delivery_Status",
+            values="Count",
+            title="Order Status Distribution",
+            hole=0.4
+        )
+
+        st.plotly_chart(fig_status, use_container_width=True)
+
+    # ---------------- ROUTE DELAY ----------------
+    if "Traffic_Delay_Min" in routes.columns:
+
+        fig_routes = px.bar(
+            routes,
+            x="Route_ID",
+            y="Traffic_Delay_Min",
+            title="Traffic Delay by Route",
+            color="Traffic_Delay_Min",
+            color_continuous_scale="Blues"
+        )
+
+        st.plotly_chart(fig_routes, use_container_width=True)
+
+    # ---------------- WAREHOUSE PERFORMANCE ----------------
+    if "Average_Processing_Time_Min" in warehouses.columns:
+
+        fig_wh = px.bar(
+            warehouses,
+            x="Warehouse_Name",
+            y="Average_Processing_Time_Min",
+            title="Warehouse Processing Time",
+            color="Average_Processing_Time_Min",
+            color_continuous_scale="Oranges"
+        )
+
+        fig_wh.update_layout(xaxis_tickangle=-45)
+        st.plotly_chart(fig_wh, use_container_width=True)
+
+    st.markdown("---")
+
+    st.success("💡 Executive Insight: Delivery performance and warehouse efficiency directly impact operational speed and customer satisfaction.")
 # ================= ORDERS =================
 elif menu == "Orders":
     df = load_data("Flipkart_Orders - Sheet1.csv")
@@ -207,5 +260,6 @@ elif menu == "Shipment Tracking":
 
     if st.session_state.role == "Admin":
         st.dataframe(df, use_container_width=True)
+
 
 
