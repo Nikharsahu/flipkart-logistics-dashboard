@@ -159,8 +159,55 @@ elif menu == "Delivery Agents":
 elif menu == "Shipment Tracking":
     df = load_data("Flipkart_ShipmentTracking - Sheet1.csv")
 
-    st.subheader("📍 Shipment Tracking Overview")
+    st.subheader("📍 Shipment Tracking Dashboard")
 
+    # ---------- KPI ROW ----------
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("Total Shipments", len(df))
+
+    if "Delivery_Speed" in df.columns:
+        col2.metric("Avg Delivery Speed", round(df["Delivery_Speed"].mean(), 2))
+
+    if "Delay_Reason" in df.columns:
+        delayed_count = df["Delay_Reason"].notna().sum()
+        col3.metric("Shipments with Delays", delayed_count)
+
+    st.markdown("---")
+
+    # ---------- Delay Reason Chart ----------
+    if "Delay_Reason" in df.columns:
+        st.markdown("### 🚨 Delay Reasons Distribution")
+
+        delay_counts = df["Delay_Reason"].value_counts().reset_index()
+        delay_counts.columns = ["Delay_Reason", "Count"]
+
+        fig_delay = px.bar(
+            delay_counts,
+            x="Delay_Reason",
+            y="Count",
+            color="Count",
+            color_continuous_scale="Reds",
+            title="Delay Reasons Analysis"
+        )
+
+        st.plotly_chart(fig_delay, use_container_width=True)
+
+    # ---------- Delivery Speed Distribution ----------
+    if "Delivery_Speed" in df.columns:
+        st.markdown("### 🚚 Delivery Speed Distribution")
+
+        fig_speed = px.histogram(
+            df,
+            x="Delivery_Speed",
+            nbins=10,
+            title="Shipment Speed Frequency",
+            color_discrete_sequence=["#2874F0"]
+        )
+
+        st.plotly_chart(fig_speed, use_container_width=True)
+
+    st.markdown("### 📄 Shipment Records")
     st.dataframe(df, use_container_width=True)
 
 # ---------------- INSIGHTS BOX ----------------
@@ -168,5 +215,6 @@ st.markdown("---")
 st.info("💡 Insight: This dashboard enables real-time monitoring of logistics performance across orders, routes, warehouses, and agents.")
 
 st.sidebar.success("Enterprise Logistics Admin Panel")
+
 
 
