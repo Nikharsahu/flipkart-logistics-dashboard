@@ -87,21 +87,36 @@ elif menu == "Warehouses":
 
     st.subheader("🏭 Warehouse Efficiency")
 
-    if "City" in df.columns:
-        city_filter = st.selectbox("Filter by City", df["City"].unique())
-        df = df[df["City"] == city_filter]
+    # Optional filter
+    city_filter = st.multiselect(
+        "Filter by City (Optional)",
+        df["City"].unique()
+    )
 
-    if "Average_Processing_Time_Min" in df.columns:
-        fig = px.bar(df,
-                     x="Warehouse_Name",
-                     y="Average_Processing_Time_Min",
-                     title="Processing Time by Warehouse",
-                     color="Average_Processing_Time_Min",
-                     color_continuous_scale="Oranges")
-        st.plotly_chart(fig, use_container_width=True)
+    if city_filter:
+        df_filtered = df[df["City"].isin(city_filter)]
+    else:
+        df_filtered = df
 
-    st.dataframe(df, use_container_width=True)
+    fig = px.bar(
+        df_filtered,
+        x="Warehouse_Name",
+        y="Average_Processing_Time_Min",
+        color="Average_Processing_Time_Min",
+        color_continuous_scale="Oranges",
+        title="Average Processing Time by Warehouse"
+    )
 
+    fig.update_layout(
+        xaxis_title="Warehouse",
+        yaxis_title="Processing Time (Minutes)",
+        xaxis_tickangle=-45,
+        height=500
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.dataframe(df_filtered, use_container_width=True)
 # ================== DELIVERY AGENTS ==================
 elif menu == "Delivery Agents":
     df = load_data("Flipkart_DeliveryAgents - Sheet1.csv")
@@ -132,3 +147,4 @@ st.markdown("---")
 st.info("💡 Insight: This dashboard enables real-time monitoring of logistics performance across orders, routes, warehouses, and agents.")
 
 st.sidebar.success("Enterprise Logistics Admin Panel")
+
