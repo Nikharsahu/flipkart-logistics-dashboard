@@ -189,22 +189,23 @@ elif menu == "Shipment Tracking":
     if "Delivery_Speed" in df.columns:
         col2.metric("Avg Speed", round(df["Delivery_Speed"].mean(), 2))
 
-   if "Delay_Reason" in df.columns:
+    if "Delay_Reason" in df.columns:
 
-    delay_counts = df["Delay_Reason"].value_counts().reset_index()
-    delay_counts.columns = ["Delay_Reason", "Count"]
+        delay_counts = df["Delay_Reason"].value_counts().reset_index()
+        delay_counts.columns = ["Delay_Reason", "Count"]
 
-    fig = px.bar(
-        delay_counts,
-        x="Delay_Reason",
-        y="Count",
-        color="Count",
-        title="Delay Reasons Distribution",
-        color_continuous_scale="Reds"
-    )
+        fig = px.bar(
+            delay_counts,
+            x="Delay_Reason",
+            y="Count",
+            color="Count",
+            title="Delay Reasons Distribution",
+            color_continuous_scale="Reds"
+        )
 
-    st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True)
 
     if st.session_state.role == "Admin":
         st.dataframe(df, use_container_width=True)
+
 
