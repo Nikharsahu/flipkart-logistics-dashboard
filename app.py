@@ -54,12 +54,33 @@ if menu == "Orders":
     if "Order_Value" in df.columns:
         col3.metric("Total Revenue", int(df["Order_Value"].sum()))
 
-    if "Warehouse_ID" in df.columns:
-        warehouse_filter = st.selectbox("Filter by Warehouse", df["Warehouse_ID"].unique())
-        df = df[df["Warehouse_ID"] == warehouse_filter]
+    st.markdown("### 📊 Order Status Distribution")
+
+    if "Delivery_Status" in df.columns:
+        fig_status = px.pie(
+            df,
+            names="Delivery_Status",
+            title="Order Status Breakdown",
+            hole=0.4
+        )
+        st.plotly_chart(fig_status, use_container_width=True)
+
+    # Revenue Trend (if date column exists)
+    if "Order_Date" in df.columns:
+        df["Order_Date"] = pd.to_datetime(df["Order_Date"])
+        revenue_trend = df.groupby("Order_Date")["Order_Value"].sum().reset_index()
+
+        fig_trend = px.line(
+            revenue_trend,
+            x="Order_Date",
+            y="Order_Value",
+            title="Revenue Trend Over Time",
+            markers=True
+        )
+
+        st.plotly_chart(fig_trend, use_container_width=True)
 
     st.dataframe(df, use_container_width=True)
-
 # ================== ROUTES ==================
 elif menu == "Routes":
     df = load_data("Flipkart_Routes - Sheet1.csv")
@@ -147,4 +168,5 @@ st.markdown("---")
 st.info("💡 Insight: This dashboard enables real-time monitoring of logistics performance across orders, routes, warehouses, and agents.")
 
 st.sidebar.success("Enterprise Logistics Admin Panel")
+
 
