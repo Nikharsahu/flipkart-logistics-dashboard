@@ -34,7 +34,7 @@ menu = st.sidebar.selectbox(
 
 # ---------------- ORDERS ----------------
 if menu == "Orders":
-   df = pd.read_csv("Flipkart_Orders - Sheet1.csv")
+    df = pd.read_csv("Flipkart_Orders - Sheet1.csv")
 
     st.subheader("📦 Orders Overview")
 
@@ -96,3 +96,4 @@ elif menu == "Shipment Tracking":
 st.sidebar.markdown("---")
 
 st.sidebar.success("Admin Panel - Logistics Analytics")
+
