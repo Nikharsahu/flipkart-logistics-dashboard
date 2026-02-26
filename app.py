@@ -75,7 +75,9 @@ elif menu == "Orders":
 
     st.title("📦 Orders Analytics")
 
+    # ---------- KPIs ----------
     col1, col2, col3 = st.columns(3)
+
     col1.metric("Total Orders", len(df))
 
     if "Delivery_Status" in df.columns:
@@ -85,13 +87,42 @@ elif menu == "Orders":
     if "Order_Value" in df.columns:
         col3.metric("Total Revenue", int(df["Order_Value"].sum()))
 
-    if "Delivery_Status" in df.columns:
-        fig = px.pie(df, names="Delivery_Status", hole=0.4,
-                     title="Order Status Distribution")
-        st.plotly_chart(fig, use_container_width=True)
+    st.markdown("---")
 
-    if st.session_state.role == "Admin":
-        st.dataframe(df, use_container_width=True)
+    # ---------- STATUS CHART ----------
+    if "Delivery_Status" in df.columns:
+
+        status_counts = df["Delivery_Status"].value_counts().reset_index()
+        status_counts.columns = ["Delivery_Status", "Count"]
+
+        fig_status = px.bar(
+            status_counts,
+            x="Delivery_Status",
+            y="Count",
+            color="Count",
+            title="Order Status Distribution",
+            color_continuous_scale="Blues"
+        )
+
+        st.plotly_chart(fig_status, use_container_width=True)
+
+    # ---------- REVENUE TREND ----------
+    if "Order_Date" in df.columns and "Order_Value" in df.columns:
+
+        df["Order_Date"] = pd.to_datetime(df["Order_Date"])
+        revenue_trend = df.groupby("Order_Date")["Order_Value"].sum().reset_index()
+
+        fig_trend = px.line(
+            revenue_trend,
+            x="Order_Date",
+            y="Order_Value",
+            title="Revenue Trend Over Time",
+            markers=True
+        )
+
+        st.plotly_chart(fig_trend, use_container_width=True)
+
+    st.dataframe(df, use_container_width=True)
 
 # ================= ROUTES =================
 elif menu == "Routes":
@@ -158,13 +189,22 @@ elif menu == "Shipment Tracking":
     if "Delivery_Speed" in df.columns:
         col2.metric("Avg Speed", round(df["Delivery_Speed"].mean(), 2))
 
-    if "Delay_Reason" in df.columns:
-        fig = px.bar(df["Delay_Reason"].value_counts().reset_index(),
-                     x="index", y="Delay_Reason",
-                     title="Delay Reasons",
-                     color="Delay_Reason",
-                     color_continuous_scale="Reds")
-        st.plotly_chart(fig, use_container_width=True)
+   if "Delay_Reason" in df.columns:
+
+    delay_counts = df["Delay_Reason"].value_counts().reset_index()
+    delay_counts.columns = ["Delay_Reason", "Count"]
+
+    fig = px.bar(
+        delay_counts,
+        x="Delay_Reason",
+        y="Count",
+        color="Count",
+        title="Delay Reasons Distribution",
+        color_continuous_scale="Reds"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
 
     if st.session_state.role == "Admin":
         st.dataframe(df, use_container_width=True)
+
