@@ -1,109 +1,134 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
+import plotly.express as px
 
-st.set_page_config(page_title="Flipkart Logistics Analytics Dashboard", layout="wide")
+st.set_page_config(page_title="Flipkart Logistics Enterprise Dashboard", layout="wide")
 
-# ---------------- LOGIN SYSTEM ----------------
-def login():
-    st.title("🔐 Flipkart Logistics Login")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+# ---------------- THEME STYLING ----------------
+st.markdown("""
+    <style>
+    .main-title {
+        font-size:32px;
+        font-weight:700;
+        color:#2874F0;
+    }
+    .kpi-box {
+        background-color:#1C1F26;
+        padding:20px;
+        border-radius:12px;
+        text-align:center;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-    if st.button("Login"):
-        if username == "admin" and password == "admin123":
-            st.session_state.logged_in = True
-        else:
-            st.error("Invalid Credentials")
+# ---------------- LOAD FUNCTION ----------------
+def load_data(file):
+    df = pd.read_csv(file)
+    df.columns = df.columns.str.strip().str.replace(" ", "_")
+    return df
 
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-
-if not st.session_state.logged_in:
-    login()
-    st.stop()
-
-# ---------------- MAIN DASHBOARD ----------------
-st.title("🚚 Flipkart Logistics Analytics Dashboard")
+# ---------------- HEADER ----------------
+st.markdown('<div class="main-title">🚚 Flipkart Logistics Enterprise Dashboard</div>', unsafe_allow_html=True)
+st.markdown("Advanced Logistics Performance Monitoring System")
+st.markdown("---")
 
 menu = st.sidebar.selectbox(
-    "Select Module",
+    "📊 Select Module",
     ["Orders", "Routes", "Warehouses", "Delivery Agents", "Shipment Tracking"]
 )
 
-# ---------------- FUNCTION TO LOAD CSV SAFELY ----------------
-def load_data(file_name):
-    df = pd.read_csv(file_name)
-    df.columns = (
-        df.columns.str.strip()
-        .str.replace(" ", "_")
-        .str.replace("%", "")
-        .str.replace("(", "")
-        .str.replace(")", "")
-    )
-    return df
-
-# ---------------- ORDERS ----------------
+# ================== ORDERS ==================
 if menu == "Orders":
     df = load_data("Flipkart_Orders - Sheet1.csv")
 
     st.subheader("📦 Orders Overview")
-    st.metric("Total Orders", len(df))
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("Total Orders", len(df))
 
     if "Delivery_Status" in df.columns:
         delayed = df[df["Delivery_Status"] == "Delayed"]
-        st.metric("Delayed Orders", len(delayed))
+        col2.metric("Delayed Orders", len(delayed))
 
-    st.dataframe(df)
+    if "Order_Value" in df.columns:
+        col3.metric("Total Revenue", int(df["Order_Value"].sum()))
 
-# ---------------- ROUTES ----------------
+    if "Warehouse_ID" in df.columns:
+        warehouse_filter = st.selectbox("Filter by Warehouse", df["Warehouse_ID"].unique())
+        df = df[df["Warehouse_ID"] == warehouse_filter]
+
+    st.dataframe(df, use_container_width=True)
+
+# ================== ROUTES ==================
 elif menu == "Routes":
     df = load_data("Flipkart_Routes - Sheet1.csv")
 
-    st.subheader("🛣 Route Performance")
-    st.dataframe(df)
+    st.subheader("🛣 Route Performance Analytics")
+
+    if "Route_ID" in df.columns:
+        route_filter = st.selectbox("Filter by Route", df["Route_ID"].unique())
+        df_filtered = df[df["Route_ID"] == route_filter]
+    else:
+        df_filtered = df
 
     if "Traffic_Delay_Min" in df.columns:
-        fig, ax = plt.subplots()
-        ax.bar(df["Route_ID"], df["Traffic_Delay_Min"])
-        ax.set_title("Traffic Delay per Route")
-        plt.xticks(rotation=45)
-        st.pyplot(fig)
+        fig = px.bar(df, x="Route_ID", y="Traffic_Delay_Min",
+                     title="Traffic Delay per Route",
+                     color="Traffic_Delay_Min",
+                     color_continuous_scale="Blues")
+        st.plotly_chart(fig, use_container_width=True)
 
-# ---------------- WAREHOUSES ----------------
+    st.dataframe(df_filtered, use_container_width=True)
+
+# ================== WAREHOUSES ==================
 elif menu == "Warehouses":
     df = load_data("Flipkart_Warehouses - Sheet1.csv")
 
-    st.subheader("🏭 Warehouse Performance")
-    st.dataframe(df)
+    st.subheader("🏭 Warehouse Efficiency")
+
+    if "City" in df.columns:
+        city_filter = st.selectbox("Filter by City", df["City"].unique())
+        df = df[df["City"] == city_filter]
 
     if "Average_Processing_Time_Min" in df.columns:
-        fig, ax = plt.subplots()
-        ax.bar(df["Warehouse_Name"], df["Average_Processing_Time_Min"])
-        ax.set_title("Average Processing Time")
-        plt.xticks(rotation=45)
-        st.pyplot(fig)
+        fig = px.bar(df,
+                     x="Warehouse_Name",
+                     y="Average_Processing_Time_Min",
+                     title="Processing Time by Warehouse",
+                     color="Average_Processing_Time_Min",
+                     color_continuous_scale="Oranges")
+        st.plotly_chart(fig, use_container_width=True)
 
-# ---------------- DELIVERY AGENTS ----------------
+    st.dataframe(df, use_container_width=True)
+
+# ================== DELIVERY AGENTS ==================
 elif menu == "Delivery Agents":
     df = load_data("Flipkart_DeliveryAgents - Sheet1.csv")
 
     st.subheader("🚴 Delivery Agent Performance")
-    st.dataframe(df)
 
     if "On_Time_Delivery_Percentage" in df.columns:
-        fig, ax = plt.subplots()
-        ax.bar(df["Agent_Name"], df["On_Time_Delivery_Percentage"])
-        ax.set_title("On-Time Delivery %")
-        plt.xticks(rotation=45)
-        st.pyplot(fig)
+        fig = px.bar(df,
+                     x="Agent_Name",
+                     y="On_Time_Delivery_Percentage",
+                     title="On-Time Delivery %",
+                     color="On_Time_Delivery_Percentage",
+                     color_continuous_scale="Greens")
+        st.plotly_chart(fig, use_container_width=True)
 
-# ---------------- SHIPMENT TRACKING ----------------
+    st.dataframe(df, use_container_width=True)
+
+# ================== SHIPMENT TRACKING ==================
 elif menu == "Shipment Tracking":
     df = load_data("Flipkart_ShipmentTracking - Sheet1.csv")
 
-    st.subheader("📍 Shipment Tracking")
-    st.dataframe(df)
+    st.subheader("📍 Shipment Tracking Overview")
 
-st.sidebar.markdown("---")
-st.sidebar.success("Admin Panel - Logistics Analytics")
+    st.dataframe(df, use_container_width=True)
+
+# ---------------- INSIGHTS BOX ----------------
+st.markdown("---")
+st.info("💡 Insight: This dashboard enables real-time monitoring of logistics performance across orders, routes, warehouses, and agents.")
+
+st.sidebar.success("Enterprise Logistics Admin Panel")
